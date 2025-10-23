@@ -1,0 +1,14 @@
+
+services:
+  - type: web
+    name: reboot-dvla-proxy
+    env: node
+    plan: free
+    runtime: node
+    region: frankfurt  # or "london" / "oregon" — choose nearest to your users
+    buildCommand: "npm install"
+    startCommand: "node server.js"
+    autoDeploy: true
+    envVars:
+      - key: DVLA_KEY
+        sync: false  # enter this manually in Render Dashboard
