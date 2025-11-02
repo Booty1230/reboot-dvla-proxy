@@ -38,20 +38,21 @@ app.get("/vehicle/:reg", async (req, res) => {
 
 // === GOOGLE DISTANCE MATRIX LOOKUP ===
 app.get("/distance", async (req, res) => {
-  const { origin, destination, key } = req.query;
-  if (!origin || !destination || !key) {
+  const { origin, destination } = req.query;
+  const GOOGLE_KEY = process.env.GOOGLE_MAPS_API_KEY;
+
+  if (!origin || !destination) {
     return res.status(400).json({ error: "Missing required parameters" });
   }
 
   try {
     const apiUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
       origin
-    )}&destinations=${encodeURIComponent(destination)}&units=imperial&key=${key}`;
+    )}&destinations=${encodeURIComponent(destination)}&units=imperial&key=${GOOGLE_KEY}`;
 
     const response = await fetch(apiUrl);
     const data = await response.json();
 
-    // 🟡 Enhanced logging for debugging
     if (!data.rows || !data.rows[0] || !data.rows[0].elements) {
       console.error("Google Maps API returned unexpected data:", JSON.stringify(data, null, 2));
       return res.status(400).json({ error: "Google API error", details: data });
