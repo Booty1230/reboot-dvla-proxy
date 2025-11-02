@@ -51,14 +51,21 @@ app.get("/distance", async (req, res) => {
     const response = await fetch(apiUrl);
     const data = await response.json();
 
-    if (!data.rows || !data.rows[0].elements[0] || data.rows[0].elements[0].status !== "OK") {
-      throw new Error("Invalid response from Google Maps API");
+    // 🟡 Enhanced logging for debugging
+    if (!data.rows || !data.rows[0] || !data.rows[0].elements) {
+      console.error("Google Maps API returned unexpected data:", JSON.stringify(data, null, 2));
+      return res.status(400).json({ error: "Google API error", details: data });
     }
 
     const element = data.rows[0].elements[0];
+    if (!element || element.status !== "OK") {
+      console.error("Google Maps element error:", JSON.stringify(element, null, 2));
+      return res.status(400).json({ error: "Google Maps element error", details: element });
+    }
+
     res.json({
       distance_text: element.distance.text,
-      distance_miles: parseFloat(element.distance.text),
+      distance_miles: parseFloat(element.distance.text.replace(/[^\d.]/g, "")),
       duration_text: element.duration.text,
     });
   } catch (error) {
@@ -67,7 +74,7 @@ app.get("/distance", async (req, res) => {
   }
 });
 
-// === ROOT ROUTE (OPTIONAL TEST) ===
+// === ROOT ROUTE ===
 app.get("/", (req, res) => {
   res.send("✅ Reboot DVLA Proxy is live and ready!");
 });
